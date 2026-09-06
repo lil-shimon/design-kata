@@ -1,7 +1,12 @@
 <?php
 
+enum Currency {
+    case JPY;
+    case USD;
+}
+
 class Money {
-  public function __construct(private readonly int $amount, private readonly string $currency) {
+  public function __construct(private readonly int $amount, private readonly Currency $currency) {
     if ($amount < 0) {
       throw new InvalidArgumentException('amountは0以上にしてください。');
     }
@@ -17,5 +22,3 @@ class Money {
     return new self($added, $this->currency);
   }
 }
-
-
