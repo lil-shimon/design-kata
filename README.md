@@ -34,7 +34,7 @@ chapter-03/
 PHP 8.5 で動作確認している。
 
 ```bash
-php chapter-03/good/Money.php     # 実行する
+php chapter-03/good/main.php     # 実行する
 php -l chapter-03/good/Money.php  # 構文チェックのみ(実行しない)
 ```
 
