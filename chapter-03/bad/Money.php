@@ -1,12 +1,12 @@
 <?php
 
-class Money_A {
+class MoneyData {
     public int $amount;
     public Currency $currency;
 }
 
-class Money_B {
-    public function addMoney(Money_A $moneyA, Money_A $moneyB): int {
+class MoneyManager {
+    public function addMoney(MoneyData $moneyA, MoneyData $moneyB): int {
         return $moneyA->amount + $moneyB->amount;
     }
 }
