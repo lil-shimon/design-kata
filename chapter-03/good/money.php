@@ -1,8 +1,8 @@
 <?php
 
-enum Currency {
-    case JPY;
-    case USD;
+enum Currency: string {
+    case JPY = 'JPY';
+    case USD = 'USD';
 }
 
 class Money {
