@@ -12,6 +12,11 @@ final class AttackPower
         }
     }
 
+    public function value(): int
+    {
+        return $this->value;
+    }
+
     public function enhance(int $increment): self
     {
         if ($increment < self::MIN_INCREMENT) {
