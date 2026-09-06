@@ -1,5 +1,10 @@
 <?php
 
+enum Currency: string {
+    case JPY = 'JPY';
+    case USD = 'USD';
+}
+
 class MoneyData {
     public int $amount;
     public Currency $currency;
