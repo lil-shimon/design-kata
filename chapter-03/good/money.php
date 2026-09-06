@@ -5,7 +5,7 @@ enum Currency: string {
     case USD = 'USD';
 }
 
-class Money {
+final class Money {
   public function __construct(private readonly int $amount, private readonly Currency $currency) {
     if ($amount < 0) {
       throw new InvalidArgumentException('amountは0以上にしてください。');
