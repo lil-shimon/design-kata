@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/Money.php';
 
 $a = new Money(100, Currency::JPY);

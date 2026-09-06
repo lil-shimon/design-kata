@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/AttackPower.php';
 
 $attack = new AttackPower(50);
