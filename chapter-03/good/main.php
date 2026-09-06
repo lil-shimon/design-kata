@@ -10,9 +10,3 @@ try {
 } catch (InvalidArgumentException $e) {
     echo 'caught: ', $e->getMessage(), PHP_EOL;
 }
-
-try {
-    $a->add(new Money(5, "US"));
-} catch (InvalidArgumentException $e) {
-    echo 'caught: ', $e->getMessage(), PHP_EOL;
-}
