@@ -9,4 +9,8 @@ class MoneyManager {
     public function addMoney(MoneyData $moneyA, MoneyData $moneyB): int {
         return $moneyA->amount + $moneyB->amount;
     }
+
+    public function multiply(MoneyData $moneyA, MoneyData $moneyB):int {
+        return $moneyA->amount * $moneyB->amount;
+    }
 }
