@@ -2,7 +2,7 @@
 
 class Common
 {
-    public function discountedPrice(int $regularPrice, float $discountRate): int
+    public static function discountedPrice(int $regularPrice, float $discountRate): int
     {
         if ($regularPrice < 0) {
             throw new InvalidArgumentException('regularPriceは0以上にしてください。');
@@ -18,7 +18,7 @@ class Common
 
 class Util
 {
-    public function isFairPrice(int $regularPrice): bool
+    public static function isFairPrice(int $regularPrice): bool
     {
         if ($regularPrice < 0) {
             throw new InvalidArgumentException('regularPriceは0以上にしてください。');
