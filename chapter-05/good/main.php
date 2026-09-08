@@ -119,22 +119,25 @@ echo "\n== 1. 移動のルールが Location の中に1つだけある ==\n";
 // good では Manager を通さず、Location 自身に動き方を聞く。
 $location = new Location(10, 20);
 $moved = $location->shift(5, 5);
-var_dump($moved);
-echo "-> (10, 20) から (15, 25) へ。移動先の計算が書かれているのは shift() の中だけ\n";
+printf("移動前 : (%3d, %3d)\n", $location->x(), $location->y());
+printf("移動後 : (%3d, %3d)  <- shift(5, 5)\n", $moved->x(), $moved->y());
+echo "-> 移動先の計算が書かれているのは shift() の中だけ。Manager は要らなくなった\n";
 
-echo "\n== 2. 操作しても元のインスタンスは変わらない ==\n";
-// shift() は自分を書き換えず return new self(...) する。
-// bad の Manager は $location->x += ... で元を壊す前提だった(そして壊せなかった)。
-printf("同一インスタンスか : %s  <- 別のインスタンスが返っている\n", $moved === $location ? 'yes' : 'no');
-var_dump($location);
-echo "-> shift() を2回呼んでも3回呼んでも、元の Location は (10, 20) のまま\n";
-
-echo "\n== 3. ただし、値を読み出す手段がまだ無い ==\n";
-// x / y は private のままで、getter が1つも無い。
-// この main.php が結果の確認に var_dump しか使えていないのが、その証拠。
-$locationMethods = array_map(
-    fn(ReflectionMethod $m): string => $m->getName(),
-    (new ReflectionClass('Location'))->getMethods()
+echo "\n== 2. 引数を書き換えず、結果を戻り値で返す ==\n";
+// bad は ActorManager::shift(Location $location, int, int): void だった。
+// 第1引数の Location を書き換えて結果を返す、いわゆる出力引数。
+// good の shift は、書き換える相手をそもそも引数に取らない。
+$shift = new ReflectionMethod(Location::class, 'shift');
+$signature = array_map(
+    fn(ReflectionParameter $p): string => $p->getType() . ' $' . $p->getName(),
+    $shift->getParameters()
 );
-printf("Location が持つメソッド : %s\n", implode(', ', $locationMethods));
-echo "-> 操作は中に入ったが、結果を外から使う手段が無い。GiftPoint の value() 相当がまだ要る\n";
+printf("Location::shift            : (%s): %s\n", implode(', ', $signature), $shift->getReturnType());
+
+$objectParams = array_filter(
+    $shift->getParameters(),
+    fn(ReflectionParameter $p): bool => !$p->getType()->isBuiltin()
+);
+printf("書き換え対象になりうる引数 : %d 個\n", count($objectParams));
+printf("戻り値の型                 : %s  <- void ではない\n", $shift->getReturnType());
+echo "                             ^- 結果は戻り値にしか現れない = 出力引数になっていない\n";
