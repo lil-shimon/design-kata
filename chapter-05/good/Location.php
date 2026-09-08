@@ -1,4 +1,5 @@
 <?php
+
 class Location
 {
     private readonly int $x;
