@@ -18,4 +18,14 @@ class Location
 
         return new self($nextX, $nextY);
     }
+
+    public function x(): int
+    {
+        return $this->x;
+    }
+
+    public function y(): int
+    {
+        return $this->y;
+    }
 }

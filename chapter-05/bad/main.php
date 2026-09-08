@@ -126,3 +126,60 @@ try {
     printf("確認せずに 5000 を消費     : %s\n", $e->getMessage());
 }
 echo "                             ^- 「残高不足」ではなく「0以上にしろ」。原因が読み取れない\n";
+
+echo "\n";
+echo "==================================================\n";
+echo " Location.php : データを持つクラスと操作するクラスを分ける\n";
+echo "==================================================\n";
+
+require_once __DIR__ . '/Location.php';
+
+$location = new Location(10, 20);
+
+echo "\n== 1. 操作クラスは、データクラスの中身に触れない ==\n";
+// 状態を Location に、操作を Manager に分けた結果、
+// Manager から $location->x を書き換えようとして private に弾かれる。
+// 「操作を外に出す」設計と、カプセル化は両立しない。
+try {
+    (new ActorManager())->shift($location, 5, 5);
+} catch (Error $e) {
+    printf("ActorManager::shift()         : %s\n", $e->getMessage());
+}
+try {
+    (new SpecialAttackManager())->shift($location, 5, 5);
+} catch (Error $e) {
+    printf("SpecialAttackManager::shift() : %s\n", $e->getMessage());
+}
+echo "                                ^- どちらの Manager も、そもそも呼べない\n";
+
+echo "\n== 2. private を突破しても、readonly が代入を止める ==\n";
+// Manager が触れないのは private のせいだけではない。
+// Reflection で private を迂回しても、readonly が生成後の代入を禁止している。
+$x = new ReflectionProperty(Location::class, 'x');
+printf("Reflection で読む : %d\n", $x->getValue($location));
+try {
+    $x->setValue($location, 999);
+} catch (Error $e) {
+    printf("Reflection で書く : %s\n", $e->getMessage());
+}
+echo "                    ^- shift() が void = 書き換える前提。だが型は不変を宣言している\n";
+echo "                       設計の意図と型宣言が矛盾したまま、誰にも気づかれずに存在できる\n";
+
+echo "\n== 3. 「移動する」というルールが Location の外に複製されている ==\n";
+// 移動先の計算が2つの Manager に分かれて書かれている。
+// 等倍と2倍で中身が違うだけで、「x と y をずらす」という知識は同じもの。
+foreach (['ActorManager', 'SpecialAttackManager'] as $class) {
+    $method = new ReflectionMethod($class, 'shift');
+    printf(
+        "%-27s : %s の %d 行目\n",
+        $class . '::shift',
+        basename($method->getFileName()),
+        $method->getStartLine()
+    );
+}
+$locationMethods = array_map(
+    fn(ReflectionMethod $m): string => $m->getName(),
+    (new ReflectionClass('Location'))->getMethods()
+);
+printf("Location が持つメソッド     : %s\n", implode(', ', $locationMethods));
+echo "                              ^- Location は自分の動かし方を知らない。値を読む手段すら無い\n";

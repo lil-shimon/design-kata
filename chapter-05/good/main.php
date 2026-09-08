@@ -105,3 +105,36 @@ echo "\n== 4. 生成の式そのものが、何のポイントかを語る ==\n"
 printf("GiftPoint::forStandardMembership() : %5d\n", GiftPoint::forStandardMembership()->value());
 printf("GiftPoint::forPremiumMembership()  : %5d\n", GiftPoint::forPremiumMembership()->value());
 echo "                                     ^- 値ではなくメソッド名が意味を運ぶ\n";
+
+echo "\n";
+echo "==================================================\n";
+echo " Location.php : 操作をデータと同じクラスに置く\n";
+echo "==================================================\n";
+
+require_once __DIR__ . '/Location.php';
+
+echo "\n== 1. 移動のルールが Location の中に1つだけある ==\n";
+// bad では ActorManager と SpecialAttackManager が同じ計算を別々に持ち、
+// しかも private に弾かれて呼ぶことすらできなかった。
+// good では Manager を通さず、Location 自身に動き方を聞く。
+$location = new Location(10, 20);
+$moved = $location->shift(5, 5);
+var_dump($moved);
+echo "-> (10, 20) から (15, 25) へ。移動先の計算が書かれているのは shift() の中だけ\n";
+
+echo "\n== 2. 操作しても元のインスタンスは変わらない ==\n";
+// shift() は自分を書き換えず return new self(...) する。
+// bad の Manager は $location->x += ... で元を壊す前提だった(そして壊せなかった)。
+printf("同一インスタンスか : %s  <- 別のインスタンスが返っている\n", $moved === $location ? 'yes' : 'no');
+var_dump($location);
+echo "-> shift() を2回呼んでも3回呼んでも、元の Location は (10, 20) のまま\n";
+
+echo "\n== 3. ただし、値を読み出す手段がまだ無い ==\n";
+// x / y は private のままで、getter が1つも無い。
+// この main.php が結果の確認に var_dump しか使えていないのが、その証拠。
+$locationMethods = array_map(
+    fn(ReflectionMethod $m): string => $m->getName(),
+    (new ReflectionClass('Location'))->getMethods()
+);
+printf("Location が持つメソッド : %s\n", implode(', ', $locationMethods));
+echo "-> 操作は中に入ったが、結果を外から使う手段が無い。GiftPoint の value() 相当がまだ要る\n";
