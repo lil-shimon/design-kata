@@ -47,5 +47,5 @@ echo "                        ^- 状態が無いので、ルールは呼び出�
 // インスタンス化しても結果は変わらない。クラスが名前空間としてしか機能していない。
 $common = new Common();
 printf("\nCommon::discountedPrice(1000, 0.9)  : %4d\n", Common::discountedPrice(1000, 0.9));
-printf("$common->discountedPrice(1000, 0.9) : %4d  <- 無警告で通り、結果も同じ\n", $common->discountedPrice(1000, 0.9));
+printf("\$common->discountedPrice(1000, 0.9) : %4d  <- 無警告で通り、結果も同じ\n", $common->discountedPrice(1000, 0.9));
 echo "                                       ^- new する意味が無い = データを持たない手続きの置き場\n";
