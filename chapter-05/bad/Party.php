@@ -2,10 +2,8 @@
 
 class Armor
 {
-    public function __construct(
-        public string $name,
-        public int $defense,
-    ) {
+    public function __construct(public string $name)
+    {
     }
 }
 
