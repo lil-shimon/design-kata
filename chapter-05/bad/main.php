@@ -241,3 +241,52 @@ printf("回復量に -30       : %4d  <- 「回復」なのに減る\n", $magicP
 printf("現在MPに -999      : %4d  <- 負のMP がそのまま返る\n", $magicPoint->recover(-999, 100, [], 10));
 printf("増分に -50         : %4d  <- 最大MPが元の 100 より小さくなる\n", $magicPoint->recover(50, 100, [-50], 30));
 echo "                     ^- 4つとも呼び出し側から来る値なのに、1つも検査していない\n";
+
+echo "\n";
+echo "==================================================\n";
+echo " Party.php : メソッドチェインで他クラスの内部を操作する\n";
+echo "==================================================\n";
+
+require_once __DIR__ . '/Party.php';
+
+$party = new Party([new Member(), new Member()]);
+
+echo "\n== 1. 装備変更のルールが、チェーンを書ける場所ならどこにでも書ける ==\n";
+// equipArmor は「canChange を見てから armor を入れる」。だがこの手順は Equipments の中ではなく
+// 呼び出す側にある。同じチェーンを書けば、誰でもこの手順を飛ばして代入できる。
+$party->members[0]->equipments->canChange = false;
+
+$party->equipArmor(0, new Armor('鋼の鎧'));
+printf("装備禁止の member0 に equipArmor() : %s\n", $party->members[0]->equipments->armor?->name ?? 'なし');
+
+// 別の時期に書かれた処理。canChange を見ずにチェーンで直接代入している。
+$party->members[0]->equipments->armor = new Armor('革の鎧');
+printf("同じ member0 にチェーンで直接代入 : %s  <- 禁止フラグを無視して装備できた\n", $party->members[0]->equipments->armor?->name ?? 'なし');
+printf("この時点の canChange              : %s\n", $party->members[0]->equipments->canChange ? 'true' : 'false');
+echo "                                    ^- false のまま。ルールを守らせる場所がどこにも無い\n";
+
+// フラグ自体も外から書き換えられる。禁止という状態を Equipments が守れていない。
+$party->members[0]->equipments->canChange = true;
+printf("\n外から canChange を戻す           : %s  <- 誰でも装備禁止を解除できる\n", $party->members[0]->equipments->canChange ? 'true' : 'false');
+
+echo "\n== 2. Equipments の内部を知っている場所が、Equipments の外に散らばる ==\n";
+// Party は members しか持たないのに、その中身の canChange と armor を名指ししている。
+$method = new ReflectionMethod('Party', 'equipArmor');
+$source = file($method->getFileName());
+foreach (array_slice($source, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1) as $line) {
+    printf("  %s", $line);
+}
+$propertiesOf = fn(string $class): string => implode(', ', array_map(
+    fn(ReflectionProperty $p): string => $p->getName(),
+    (new ReflectionClass($class))->getProperties()
+));
+printf("\nParty が持つプロパティ      : %s\n", $propertiesOf('Party'));
+printf("Equipments が持つプロパティ : %s\n", $propertiesOf('Equipments'));
+
+// 「Member は Equipments を持ち、Equipments は canChange と armor を持つ」という知識が、
+// Equipments の外に何箇所コピーされているか。Equipments を直すと、その全部が壊れる。
+echo "\n同じチェーンが書かれている箇所:\n";
+foreach (['Party.php' => __DIR__ . '/Party.php', 'main.php' => __FILE__] as $name => $path) {
+    printf("  %-10s : %d 箇所\n", $name, substr_count(file_get_contents($path), '->equipments' . '->'));
+}
+echo "                 ^- Equipments を直したいのに、直す先は Equipments の外にある\n";
