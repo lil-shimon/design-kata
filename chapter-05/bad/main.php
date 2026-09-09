@@ -183,3 +183,61 @@ $locationMethods = array_map(
 );
 printf("Location が持つメソッド     : %s\n", implode(', ', $locationMethods));
 echo "                              ^- Location は自分の動かし方を知らない。値を読む手段すら無い\n";
+
+echo "\n";
+echo "==================================================\n";
+echo " MagicPoint.php : 引数が多い = 状態を呼び出し側に持たせている\n";
+echo "==================================================\n";
+
+require_once __DIR__ . '/MagicPoint.php';
+
+$magicPoint = new MagicPoint();
+
+echo "\n== 1. MagicPoint は自分の状態を1つも持たない ==\n";
+// MP を扱うクラスなのに、現在MP も 最大MP も持っていない。
+// 状態が無いので、回復に必要な値は毎回 呼び出し側 が全部揃えて渡すしかない。
+// 「引数が多い」のは書き方の問題ではなく、状態の置き場所が無いことの結果。
+$recover = new ReflectionMethod('MagicPoint', 'recover');
+printf("プロパティ数     : %d\n", count((new ReflectionClass('MagicPoint'))->getProperties()));
+printf("recover() の引数 : %d\n", $recover->getNumberOfParameters());
+printf(
+    "引数の内訳       : %s\n",
+    implode(', ', array_map(
+        fn(ReflectionParameter $p): string => $p->getType() . ' $' . $p->getName(),
+        $recover->getParameters()
+    ))
+);
+echo "                   ^- MP に関する知識が全部 呼び出し側 にある\n";
+
+echo "\n== 2. int が3つ並ぶので、順番を取り違えても型は何も言わない ==\n";
+// 現在MP / 元の最大MP / 回復量 はどれも int。取り違えても TypeError にならず、
+// もっともらしい値が返る。落ちてくれないぶん、気づく手掛かりが無い。
+$increments = [10, 10, 20]; // 最大MPの増加量(装備 +10 / +10、レベルアップ +20)
+printf("正しい順序                     : %4d\n", $magicPoint->recover(50, 100, $increments, 30));
+printf("current と original を入れ替え : %4d  <- 例外は出ない。静かに違う値になる\n", $magicPoint->recover(100, 50, $increments, 30));
+printf("current と recovery を入れ替え : %4d  <- 正解と同じ値。テストしても気づけない\n", $magicPoint->recover(30, 100, $increments, 50));
+
+echo "\n== 3. 引数が多いほど、呼び出し側で揃え損ねる ==\n";
+// 最大MPの増加量は装備やレベルアップで増える。その一覧を、recover を呼ぶ箇所すべてが
+// 自前で正しく組み立てる必要がある。1箇所でも組み立てを間違えると挙動が食い違う。
+function restAtInn(MagicPoint $magicPoint, int $current): int
+{
+    return $magicPoint->recover($current, 100, [10, 10, 20], 30);
+}
+function castHealSpell(MagicPoint $magicPoint, int $current): int
+{
+    // 別の時期に書かれた呼び出し。レベルアップ分の +20 が漏れている
+    return $magicPoint->recover($current, 100, [10, 10], 30);
+}
+printf("現在MP     : %4d\n", 130);
+printf("宿屋で休む : %4d\n", restAtInn($magicPoint, 130));
+printf("回復魔法   : %4d  <- 同じ状態のはずが上限が違う。回復したのに減っている\n", castHealSpell($magicPoint, 130));
+echo "             ^- 増分の組み立てを MagicPoint が知らないので、呼び出し箇所の数だけ複製される\n";
+
+echo "\n== 4. 引数が4つあるのに、そのどれにも検証が無い ==\n";
+// 状態を持たない = 不変条件を守る場所が無い、ということでもある。
+// 観点1 で見た通り MagicPoint には守るべき自分の値が無いので、検証を置きようがない。
+printf("回復量に -30       : %4d  <- 「回復」なのに減る\n", $magicPoint->recover(50, 100, [], -30));
+printf("現在MPに -999      : %4d  <- 負のMP がそのまま返る\n", $magicPoint->recover(-999, 100, [], 10));
+printf("増分に -50         : %4d  <- 最大MPが元の 100 より小さくなる\n", $magicPoint->recover(50, 100, [-50], 30));
+echo "                     ^- 4つとも呼び出し側から来る値なのに、1つも検査していない\n";
