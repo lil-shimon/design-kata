@@ -5,11 +5,10 @@ class MagicPoint
     const MIN = 0;
 
     /**
-     * @param list<int> $maxMagicPointIncrements 最大MPの増加量(装備やレベルアップによる)
-     * @throws InvalidArgumentException MPが0未満の場合
+     * @param list<int> $maxMagicPointIncrements
      */
     public function __construct(
-        private readonly int $currentMagicPoint,
+        private int $currentMagicPoint,
         private readonly int $originalMagicPoint,
         private readonly array $maxMagicPointIncrements,
     ) {
@@ -35,32 +34,18 @@ class MagicPoint
         return $amount;
     }
 
-    /**
-     * @throws InvalidArgumentException 回復量が0未満の場合
-     */
-    public function recover(int $amount): self
+    public function recover(int $amount): void
     {
         $this->assertAmount($amount);
 
-        return new self(
-            min($this->max(), $this->currentMagicPoint + $amount),
-            $this->originalMagicPoint,
-            $this->maxMagicPointIncrements,
-        );
+        $this->currentMagicPoint = min($this->max(), $this->currentMagicPoint + $amount);
     }
 
-    /**
-     * @throws InvalidArgumentException 消費量が0未満の場合
-     */
-    public function consume(int $amount): self
+    public function consume(int $amount): void
     {
         $this->assertAmount($amount);
 
-        return new self(
-            max($this->currentMagicPoint - $amount, self::MIN),
-            $this->originalMagicPoint,
-            $this->maxMagicPointIncrements,
-        );
+        $this->currentMagicPoint = max($this->currentMagicPoint - $amount, self::MIN);
     }
 
     private function assertAmount(int $amount): void

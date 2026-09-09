@@ -167,51 +167,20 @@ echo "                   ^- bad は int が3つ並んでいた。並んでいな
 
 echo "\n== 2. 最大MPの計算が、クラスの中の1箇所にしかない ==\n";
 // bad では増分の一覧を呼び出し箇所ごとに組み立てていて、回復魔法だけ +20 が漏れていた。
-// good ではどちらも同じインスタンスに聞くので、上限がズレようがない。
-function restAtInn(MagicPoint $magicPoint): MagicPoint
+// good ではどちらも同じ MagicPoint に頼むので、上限がズレようがない。
+function restAtInn(MagicPoint $magicPoint): void
 {
-    return $magicPoint->recover(30);
+    $magicPoint->recover(30);
 }
-function castHealSpell(MagicPoint $magicPoint): MagicPoint
+function castHealSpell(MagicPoint $magicPoint): void
 {
-    return $magicPoint->recover(30);
+    $magicPoint->recover(30);
 }
-$magicPoint = new MagicPoint(130, 100, [10, 10, 20]); // 装備 +10 / +10、レベルアップ +20
-printf("現在MP     : %4d (最大 %d)\n", $magicPoint->current(), $magicPoint->max());
-printf("宿屋で休む : %4d\n", restAtInn($magicPoint)->current());
-printf("回復魔法   : %4d  <- bad は 140 / 120 とズレていた\n", castHealSpell($magicPoint)->current());
+$atInn = new MagicPoint(130, 100, [10, 10, 20]); // 装備 +10 / +10、レベルアップ +20
+$byMagic = new MagicPoint(130, 100, [10, 10, 20]);
+restAtInn($atInn);
+castHealSpell($byMagic);
+printf("現在MP     : %4d (最大 %d)\n", 130, $atInn->max());
+printf("宿屋で休む : %4d\n", $atInn->current());
+printf("回復魔法   : %4d  <- bad は 140 / 120 とズレていた\n", $byMagic->current());
 echo "             ^- 呼び出し側に増分の配列が1つも書かれていない\n";
-
-echo "\n== 3. 操作しても元のインスタンスは変わらない ==\n";
-// bad は「戻り値を変数に代入し直す」のが呼び出し側の責務だった。
-// good も戻り値を受け取る形だが、受け取り忘れた時に残るのは元の正しい値。
-// 壊れた状態が居座るのではなく、単に何も起きない。
-$before = new MagicPoint(50, 100, [10, 10, 20]);
-$after = $before->recover(30);
-printf("同一インスタンスか : %s\n", $before === $after ? 'yes' : 'no');
-printf("初期状態           : 元 = %3d / 回復後 = %3d\n", $before->current(), $after->current());
-$before->recover(30); // 戻り値を捨てる
-printf("戻り値を捨てて回復 : 元 = %3d  <- 元は無傷。古い値が静かに壊れることはない\n", $before->current());
-$nearMax = new MagicPoint(130, 100, [10, 10, 20]);
-printf("上限まで回復       : %3d -> %3d  <- max() の %d で打ち切られる\n", $nearMax->current(), $nearMax->recover(30)->current(), $nearMax->max());
-
-echo "\n== 4. 検証の置き場所も、クラスの中に1つできた ==\n";
-// ここは第5章の主題(引数が多い)そのものではない。ただ、状態と操作が同じクラスに
-// 集まった副産物として「どこに検証を書くか」が自明になった。
-// bad は4つの引数が全部呼び出し側から来ていたので、検証を書くなら recover を呼ぶ箇所すべてだった。
-try {
-    $before->recover(-30);
-} catch (InvalidArgumentException $e) {
-    printf("recover(-30)         : %s\n", $e->getMessage());
-}
-try {
-    $before->consume(-30);
-} catch (InvalidArgumentException $e) {
-    printf("consume(-30)         : %s\n", $e->getMessage());
-}
-try {
-    new MagicPoint(-999, 100, []);
-} catch (InvalidArgumentException $e) {
-    printf("new MagicPoint(-999) : %s\n", $e->getMessage());
-}
-echo "                       ^- 回復量と消費量は同じルール。assertAmount() に1つだけ書いてある\n";
