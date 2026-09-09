@@ -165,7 +165,7 @@ printf(
 );
 echo "                   ^- bad は int が3つ並んでいた。並んでいなければ入れ替えようがない\n";
 
-echo "\n== 2. 最大MPの計算が、クラスの中の1箇所にしかない ==\n";
+echo "\n== 2. 最大MPの材料を、呼び出し側が組み立てなくてよくなった ==\n";
 // bad では増分の一覧を呼び出し箇所ごとに組み立てていて、回復魔法だけ +20 が漏れていた。
 // good ではどちらも同じ MagicPoint に頼むので、上限がズレようがない。
 function restAtInn(MagicPoint $magicPoint): void
