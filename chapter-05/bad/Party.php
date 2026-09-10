@@ -7,7 +7,7 @@ class Armor
     }
 }
 
-class Equipments
+class Equipment
 {
     public bool $canChange = true;
     public ?Armor $armor = null;
@@ -15,11 +15,11 @@ class Equipments
 
 class Member
 {
-    public Equipments $equipments;
+    public Equipment $equipment;
 
     public function __construct()
     {
-        $this->equipments = new Equipments();
+        $this->equipment = new Equipment();
     }
 }
 
@@ -32,8 +32,8 @@ class Party
 
     public function equipArmor(int $memberId, Armor $newArmor): void
     {
-        if ($this->members[$memberId]->equipments->canChange) {
-            $this->members[$memberId]->equipments->armor = $newArmor;
+        if ($this->members[$memberId]->equipment->canChange) {
+            $this->members[$memberId]->equipment->armor = $newArmor;
         }
     }
 }
