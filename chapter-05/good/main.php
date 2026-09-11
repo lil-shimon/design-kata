@@ -184,3 +184,99 @@ printf("現在MP     : %4d (最大 %d)\n", 130, $atInn->max());
 printf("宿屋で休む : %4d\n", $atInn->current());
 printf("回復魔法   : %4d  <- bad は 140 / 120 とズレていた\n", $byMagic->current());
 echo "             ^- 呼び出し側に増分の配列が1つも書かれていない\n";
+
+echo "\n";
+echo "==================================================\n";
+echo " Party.php : 持っている側に頼み、内部には触らない\n";
+echo "==================================================\n";
+
+require_once __DIR__ . '/Party.php';
+
+$party = new Party([new Member(), new Member()]);
+
+// 外から読む手段が無いので、結果の確認は Reflection で行う。
+// 「正規の経路では読めないが、中では確かに変わっている」を見るため。
+$peek = function (Party $party, int $memberId): string {
+    $members = (new ReflectionProperty(Party::class, 'members'))->getValue($party);
+    $equipment = (new ReflectionProperty(Member::class, 'equipment'))->getValue($members[$memberId]);
+    return $equipment->armor()?->name() ?? 'なし';
+};
+
+echo "\n== 1. ルールを迂回する経路が、1つも残っていない ==\n";
+// bad では canChange を外から false にした上で、
+// $party->members[0]->equipments->armor = ... と辿って装備できた。
+// good は途中が全て private なので、辿り始めた最初の一歩で止まる。
+foreach ([
+    '$party->members'                      => fn() => $party->members,
+    '$party->members[0]->equipment'        => fn() => $party->members[0]->equipment,
+    '$party->members[0]->equipment->armor' => fn() => $party->members[0]->equipment->armor,
+] as $expression => $access) {
+    try {
+        $access();
+        printf("  %-37s : 通った\n", $expression);
+    } catch (Error $e) {
+        printf("  %-37s : %s\n", $expression, $e->getMessage());
+    }
+}
+echo "                                        ^- 3つとも同じ場所で止まる。先へ進めない\n";
+
+// Equipment を直接手に持っていても、フラグにも防具にも代入できない。
+// bad では「外から canChange を戻す」で誰でも装備禁止を解除できた。
+echo "\nEquipment を直接持っている場合:\n";
+$equipment = new Equipment();
+foreach (['canChange', 'armor'] as $property) {
+    try {
+        $equipment->$property = null;
+        printf("  \$equipment->%-9s に代入 : 通った\n", $property);
+    } catch (Error $e) {
+        printf("  \$equipment->%-9s に代入 : %s\n", $property, $e->getMessage());
+    }
+}
+echo "                                ^- 装備の可否を決めるのは Equipment だけになった\n";
+
+// 残された唯一の経路。頼むことはできるが、中を覗くことはできない。
+echo "\n通る経路は equipArmor() だけ:\n";
+printf("  初期状態              : member0 = %-6s / member1 = %s\n", $peek($party, 0), $peek($party, 1));
+$party->equipArmor(0, new Armor('鋼の鎧'));
+printf("  equipArmor(0, 鋼の鎧) : member0 = %-6s / member1 = %s  <- member1 には何もしていない\n", $peek($party, 0), $peek($party, 1));
+echo "                          ^- この行の値も Reflection で覗いたもの。正規の経路では読めない\n";
+
+echo "\n== 2. Equipment の内部を知っているのは Equipment だけ ==\n";
+// bad では「Member は Equipment を持ち、Equipment は canChange と armor を持つ」という
+// 知識が Party.php に2箇所、main.php に7箇所コピーされていた。
+echo "同じチェーンが書かれている箇所:\n";
+foreach (['Party.php' => __DIR__ . '/Party.php', 'main.php' => __FILE__] as $name => $path) {
+    printf("  %-10s : %d 箇所  (bad は %s)\n", $name, substr_count(file_get_contents($path), '->equipment' . '->'), $name === 'Party.php' ? '2 箇所' : '7 箇所');
+}
+echo "               ^- main.php の2箇所は観点1で書いた同じ1行。実行すると Error になる式なので、\n";
+echo "                  成立するチェーンは0。Party.php の1箇所は Member が自分の持ち物に話しかける1段\n";
+
+// 各段が「自分のフィールドから先へ進んでいないか」を、実物のソースで確認する。
+echo "\n各段のソース:\n";
+foreach ([['Party', 'equipArmor'], ['Member', 'equipArmor'], ['Equipment', 'equipArmor']] as [$class, $name]) {
+    printf("  [%s]\n", $class);
+    $method = new ReflectionMethod($class, $name);
+    $source = file($method->getFileName());
+    foreach (array_slice($source, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1) as $line) {
+        printf("  %s", $line);
+    }
+    echo "\n";
+}
+echo "  ^- どの段も \$this-> の1段で止まっている。他人の持ち物を辿る行が1つも無い\n";
+
+// 外から触れるものが、頼むためのメソッドだけになっているか。
+echo "\n外から触れるもの:\n";
+foreach (['Party', 'Member', 'Equipment', 'Armor'] as $class) {
+    $reflection = new ReflectionClass($class);
+    $methods = array_map(
+        fn(ReflectionMethod $m): string => $m->getName() . '()',
+        $reflection->getMethods(ReflectionMethod::IS_PUBLIC)
+    );
+    printf(
+        "  %-10s : public プロパティ %d 個 / %s\n",
+        $class,
+        count($reflection->getProperties(ReflectionProperty::IS_PUBLIC)),
+        implode(', ', $methods)
+    );
+}
+echo "               ^- 公開されているのは「頼む手段」だけ。内部を渡す手段が無い\n";
