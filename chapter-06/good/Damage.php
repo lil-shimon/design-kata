@@ -13,10 +13,6 @@ class SpecialGauge
 
     public function update(int $damageAmount): self
     {
-        if ($this->value === self::MAX_SPECIAL_GAUGE) {
-            return new self($this->value);
-        }
-
         $newSpecialGauge = $this->value + 5 + (int)($damageAmount / 100);
         return new self(min(self::MAX_SPECIAL_GAUGE, $newSpecialGauge));
     }
