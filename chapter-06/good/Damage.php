@@ -60,7 +60,7 @@ class Weapon
         }
     }
 
-    public function calculateDurability(Damage $damage, Weapon $weapon, SpecialGauge $specialGauge): self
+    public function use(Damage $damage, Weapon $weapon, SpecialGauge $specialGauge): self
     {
         if ($damage->amount >= 10) {
             return $weapon;
