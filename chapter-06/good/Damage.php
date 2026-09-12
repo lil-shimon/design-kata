@@ -53,6 +53,7 @@ class Damage
 class Weapon
 {
     private const MIN_DURABILITY = 0;
+    private const DURABILITY_DECREASE_THRESHOLD = 10;
 
     public function __construct(
         public readonly int $durability,
@@ -74,7 +75,7 @@ class Weapon
             throw new RuntimeException("weapon is broken.");
         }
 
-        if ($damage->amount >= 10) {
+        if ($damage->amount >= self::DURABILITY_DECREASE_THRESHOLD) {
             return $this;
         }
 
