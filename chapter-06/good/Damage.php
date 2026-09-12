@@ -71,7 +71,7 @@ class Weapon
     public function use(Damage $damage, SpecialGauge $specialGauge): self
     {
         if (!$this->canUse()) {
-            return $this;
+            throw new RuntimeException("weapon is broken.");
         }
 
         if ($damage->amount >= 10) {
