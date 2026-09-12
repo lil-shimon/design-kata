@@ -2,23 +2,28 @@
 
 class SpecialGauge
 {
+    private const MAX_SPECIAL_GAUGE = 100;
+
     public function __construct(public readonly int $value)
     {
+        if ($value > self::MAX_SPECIAL_GAUGE) {
+            throw new InvalidArgumentException("special gauge must be less than or equal to " . self::MAX_SPECIAL_GAUGE . ".");
+        }
     }
 
     public function update(int $damageAmount): self
     {
-        if ($this->value === 100) {
+        if ($this->value === self::MAX_SPECIAL_GAUGE) {
             return new self($this->value);
         }
 
         $newSpecialGauge = $this->value + 5 + (int)($damageAmount / 100);
-        return new self($newSpecialGauge);
+        return new self(min(self::MAX_SPECIAL_GAUGE, $newSpecialGauge));
     }
 
     public function isSpecialMode(): bool
     {
-        if($this->value >= 100) {
+        if ($this->value === self::MAX_SPECIAL_GAUGE) {
             return true;
         }
 
