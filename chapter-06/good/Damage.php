@@ -52,13 +52,20 @@ class Damage
 
 class Weapon
 {
+    private const MIN_DURABILITY = 0;
+
     public function __construct(
         public readonly int $durability,
         public readonly int $attackPower,
     ) {
-        if ($durability < 0) {
+        if ($durability < self::MIN_DURABILITY) {
             throw new InvalidArgumentException("durability must be positive number.");
         }
+    }
+
+    public function canUse(): bool
+    {
+        return $this->durability > self::MIN_DURABILITY;
     }
 
     public function use(Damage $damage, Weapon $weapon, SpecialGauge $specialGauge): self
