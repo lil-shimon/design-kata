@@ -68,21 +68,21 @@ class Weapon
         return $this->durability > self::MIN_DURABILITY;
     }
 
-    public function use(Damage $damage, Weapon $weapon, SpecialGauge $specialGauge): self
+    public function use(Damage $damage, SpecialGauge $specialGauge): self
     {
-        if (!$weapon->canUse()) {
-            return $weapon;
+        if (!$this->canUse()) {
+            return $this;
         }
 
         if ($damage->amount >= 10) {
-            return $weapon;
+            return $this;
         }
 
         if ($specialGauge->isSpecialMode()) {
-            return $weapon;
+            return $this;
         }
 
-        return new self($weapon->durability - 1, $weapon->attackPower);
+        return new self($this->durability - 1, $this->attackPower);
     }
 }
 
