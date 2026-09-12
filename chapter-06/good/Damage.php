@@ -70,6 +70,10 @@ class Weapon
 
     public function use(Damage $damage, Weapon $weapon, SpecialGauge $specialGauge): self
     {
+        if (!$weapon->canUse()) {
+            return $weapon;
+        }
+
         if ($damage->amount >= 10) {
             return $weapon;
         }
