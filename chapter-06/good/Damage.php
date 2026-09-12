@@ -34,19 +34,29 @@ class Member
     }
 }
 
+class AttackPower
+{
+    public readonly int $power;
+
+    public function __construct(Member $member, Weapon $weapon)
+    {
+        $this->power = $member->armStrength + $weapon->attackPower;
+    }
+}
+
 class Damage
 {
     public readonly int $amount;
 
-    public function __construct(Member $member, Weapon $weapon, SpecialGauge $specialGauge, Enemy $enemy)
+    public function __construct(AttackPower $attackPower, SpecialGauge $specialGauge, Enemy $enemy)
     {
-        $attackPower = $member->armStrength + $weapon->attackPower;
+        $power = $attackPower->power;
 
         if ($specialGauge->isSpecialMode()) {
-            $attackPower = $attackPower * 2;
+            $power = $power * 2;
         }
 
-        $this->amount = max(0, $attackPower - (int)($enemy->defense / 2));
+        $this->amount = max(0, $power - (int)($enemy->defense / 2));
     }
 }
 
