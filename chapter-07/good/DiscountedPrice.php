@@ -11,7 +11,7 @@ class DiscountedPrice
         }
     }
 
-    public function getDiscountedPrice(int $discountAmount): int
+    public function apply(int $discountAmount): int
     {
         return max(self::MIN_PRICE, $this->price - $discountAmount);
     }
@@ -27,7 +27,7 @@ class RegularDiscountManager
 
     public function getDiscountedPrice(): int
     {
-        return $this->discountedPrice->getDiscountedPrice(self::DISCOUNT_AMOUNT);
+        return $this->discountedPrice->apply(self::DISCOUNT_AMOUNT);
     }
 }
 
@@ -41,6 +41,6 @@ class SummerDiscountManager
 
     public function getDiscountedPrice(): int
     {
-        return $this->discountedPrice->getDiscountedPrice(self::DISCOUNT_AMOUNT);
+        return $this->discountedPrice->apply(self::DISCOUNT_AMOUNT);
     }
 }
