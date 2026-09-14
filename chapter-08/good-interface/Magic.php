@@ -86,3 +86,34 @@ class MagicFactory
         return $this->magics[$magicType->name];
     }
 }
+
+class MagicAttack
+{
+    public function __construct(private readonly MagicFactory $magicFactory)
+    {
+    }
+
+    public function attack(MagicType $magicType): void
+    {
+        $magic = $this->magicFactory->of($magicType);
+
+        $this->showName($magic);
+        $this->showPower($magic);
+        $this->showCost($magic);
+    }
+
+    private function showName(Magic $magic): void
+    {
+        // $magic->name() を画面に表示する
+    }
+
+    private function showPower(Magic $magic): void
+    {
+        // $magic->power() を画面に表示する
+    }
+
+    private function showCost(Magic $magic): void
+    {
+        // $magic->cost() を画面に表示する
+    }
+}
