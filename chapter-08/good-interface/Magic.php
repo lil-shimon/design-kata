@@ -24,3 +24,39 @@ class Fire implements Magic
         return 2;
     }
 }
+
+class Thunder implements Magic
+{
+    public function name(): string
+    {
+        return '落雷';
+    }
+
+    public function power(): int
+    {
+        return 50;
+    }
+
+    public function cost(): int
+    {
+        return 10;
+    }
+}
+
+class Beam implements Magic
+{
+    public function name(): string
+    {
+        return 'ビーム';
+    }
+
+    public function power(): int
+    {
+        return 40;
+    }
+
+    public function cost(): int
+    {
+        return 8;
+    }
+}
