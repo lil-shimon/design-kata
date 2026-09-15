@@ -61,11 +61,10 @@ class Party
 
             $member->hitPoint -= 10;
 
-            if ($member->hitPoint <= 0) {
-                $member->hitPoint = 0;
-                $member->addState(StateType::Dead);
-                $member->removeState(StateType::Poison);
-            }
+            if (0 < $member->hitPoint) continue;
+            $member->hitPoint = 0;
+            $member->addState(StateType::Dead);
+            $member->removeState(StateType::Poison);
         }
     }
 }
