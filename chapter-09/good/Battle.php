@@ -69,8 +69,3 @@ class Party
         }
     }
 }
-
-class Battle
-{
-    // TODO
-}
