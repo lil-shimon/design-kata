@@ -13,23 +13,23 @@ class Member
         public int $hitPoint,
         public readonly int $attack,
         public readonly bool $teamAttackSucceeded,
-        public readonly StateType $stateType
+        public array $states = []
     ) {
     }
 
     public function hasState(StateType $stateType): bool
     {
-        return in_array($stateType, $this->stateType);
+        return in_array($stateType, $this->states);
     }
 
     public function addState(StateType $stateType): bool
     {
-        return $this->stateType[] = $stateType;
+        return $this->states = $stateType;
     }
 
     public function removeState(StateType $stateType): bool
     {
-        return $this->stateType = array_values(array_filter($this->stateType, fn (StateType $state) => $state !== $stateType));
+        return $this->states = array_values(array_filter($this->states, fn (StateType $state) => $state !== $stateType));
     }
 }
 
