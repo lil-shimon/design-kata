@@ -56,7 +56,7 @@ class Party
     public function applyPoisonDamage(): void
     {
         foreach ($this->members as $member) {
-            if ($member->hitPoint < 0) continue;
+            if ($member->hitPoint <= 0) continue;
             if (!$member->hasState(StateType::Poison)) continue;
 
             $member->hitPoint -= 10;
