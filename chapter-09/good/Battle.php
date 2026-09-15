@@ -52,6 +52,22 @@ class Party
     {
         return array_any($this->members, fn (Member $member) => $member->hasState(StateType::Poison));
     }
+
+    public function applyPoisonDamage(): void
+    {
+        foreach ($this->members as $member) {
+            if ($member->hitPoint < 0) continue;
+            if (!$member->hasState(StateType::Poison)) continue;
+
+            $member->hitPoint -= 10;
+
+            if ($member->hitPoint <= 0) {
+                $member->hitPoint = 0;
+                $member->addState(StateType::Dead);
+                $member->removeState(StateType::Poison);
+            }
+        }
+    }
 }
 
 class Battle
