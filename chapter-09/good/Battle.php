@@ -24,7 +24,7 @@ class Member
 
     public function addState(StateType $stateType): bool
     {
-        return $this->states = $stateType;
+        return $this->states[] = $stateType;
     }
 
     public function removeState(StateType $stateType): bool
