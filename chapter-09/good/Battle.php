@@ -22,14 +22,14 @@ class Member
         return in_array($stateType, $this->states);
     }
 
-    public function addState(StateType $stateType): bool
+    public function addState(StateType $stateType): void
     {
-        return $this->states[] = $stateType;
+        $this->states[] = $stateType;
     }
 
-    public function removeState(StateType $stateType): bool
+    public function removeState(StateType $stateType): void
     {
-        return $this->states = array_values(array_filter($this->states, fn (StateType $state) => $state !== $stateType));
+        $this->states = array_values(array_filter($this->states, fn (StateType $state) => $state !== $stateType));
     }
 }
 
