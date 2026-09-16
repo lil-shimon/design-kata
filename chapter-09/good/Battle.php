@@ -41,7 +41,7 @@ class Party
     /**
      * @param Member[] $members
      */
-    public function __construct(public readonly array $members)
+    public function __construct(private readonly array $members)
     {
     }
 
