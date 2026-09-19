@@ -24,11 +24,16 @@ class Reservation
         $this->productId = $product->id;
         $this->productPrice = $product->price;
 
-        $this->deposit = (int)($product->price * $quantity * self::DEPOSIT_RATE);
+        $this->deposit = (int)($this->subtotal() * self::DEPOSIT_RATE);
+    }
+
+    public function subtotal(): int
+    {
+        return $this->productPrice * $this->quantity;
     }
 
     public function remainingPayment(): int
     {
-        return $this->productPrice * $this->quantity - $this->deposit;
+        return $this->subtotal() - $this->deposit;
     }
 }
