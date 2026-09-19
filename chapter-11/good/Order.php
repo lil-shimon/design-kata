@@ -38,7 +38,7 @@ class Order
     {
         $basePrice = 0;
         foreach ($this->items as $item) {
-            $basePrice += $item->subbase();
+            $basePrice += $item->subtotal();
         }
 
         return $basePrice;
