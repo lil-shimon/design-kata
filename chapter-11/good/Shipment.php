@@ -8,7 +8,7 @@ class Shipment
         public readonly DateTimeImmutable $shippedAt
     )
     {
-        if (strlen($trackingNumber)) {
+        if (!strlen($trackingNumber)) {
             throw new InvalidArgumentException();
         }
     }
